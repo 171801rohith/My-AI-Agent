@@ -28,7 +28,6 @@ agent = ReActAgent(
 react_system_prompt = PromptTemplate(system_prompt)
 agent.update_prompts({"react_header": react_system_prompt})
 ctx = Context(agent)
-ctx = Context(agent)
 
 
 async def generateResponse(message: str, chatMessages: list) -> str:
