@@ -1,8 +1,8 @@
+import os
 from llama_index.llms.ollama import Ollama
 from llama_index.core.agent.workflow import ReActAgent, AgentStream
 from llama_index.core.workflow import Context
 from dotenv import load_dotenv
-import os
 
 from tools import Tools
 
