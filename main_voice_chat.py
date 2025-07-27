@@ -22,6 +22,14 @@ os.makedirs(input_dir, exist_ok=True)
 messages = []
 
 
+def check_for_termination(words: list) -> bool:
+    if "chat" in words:
+        i = words.index("chat")
+        if i >= 1 and words[i - 1] in ["exit", "quit"]:
+            return True
+    return False
+
+
 async def main_loop():
     console.print(
         Panel(
@@ -40,14 +48,19 @@ async def main_loop():
         console.print(
             f"[bold white]Press and hold 'SPACE' to start recording 🎙️[/bold white]"
         )
+        console.print(
+            f"[italic grey]Say 'quit chat' or 'exit chat' to Terminate Sanctuary [/italic grey]"
+        )
         while True:
             prompt = ""
             if record_audio(console):
                 prompt = speech_to_text()
             else:
                 continue
-         
-
+            
+            if check_for_termination(prompt.lower().split(" ")):
+                break
+                
             messages.append({"role": "user", "content": prompt})
             chatMessages = [
                 ChatMessage(role=m["role"], content=m["content"]) for m in messages
