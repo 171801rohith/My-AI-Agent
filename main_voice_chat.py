@@ -41,10 +41,12 @@ async def main_loop():
             f"[bold white]Press and hold 'SPACE' to start recording 🎙️[/bold white]"
         )
         while True:
+            prompt = ""
             if record_audio(console):
                 prompt = speech_to_text()
             else:
                 continue
+         
 
             messages.append({"role": "user", "content": prompt})
             chatMessages = [
