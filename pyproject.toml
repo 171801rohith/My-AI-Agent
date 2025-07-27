@@ -1,0 +1,16 @@
+[project]
+name = "my-ai-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dotenv>=0.9.9",
+    "llama-index>=0.12.52",
+    "llama-index-core>=0.12.52.post1",
+    "llama-index-llms-google-genai>=0.2.5",
+    "llama-index-llms-ollama>=0.6.2",
+    "pvporcupine>=3.0.5",
+    "pvrecorder>=1.2.7",
+    "rich>=14.1.0",
+]
