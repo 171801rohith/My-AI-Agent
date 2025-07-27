@@ -4,13 +4,16 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-keywords = ["sanctuary"]
+base_dir = os.path.dirname(__file__)
+keyword_path = os.path.join(
+    base_dir, "..", "pico_models", "sanctuary_en_windows_v3_0_0.ppn"
+)
 
 
 def wake_sanctuary() -> bool:
     porcupine = pvporcupine.create(
         access_key=os.getenv("PICOVOICE_API_KEY"),
-        keyword_paths=["sanctuary_wake_word/sanctuary_en_windows_v3_0_0.ppn"],
+        keyword_paths=[keyword_path],
     )
     recoder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
