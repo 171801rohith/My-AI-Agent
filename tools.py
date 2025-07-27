@@ -24,9 +24,9 @@ class Tools:
         return a - b
 
     def quotient(self, a: float, b: float) -> float:
-        """Returns the Quotient of two numbers result as float."""
+        """Divides two numbers and returns the quotient as result(float)."""
         return a / b
 
     def remainder(self, a: float, b: float) -> float:
-        """Returns the Remainder or Modulus of two numbers result as float."""
+        """Divides two numbers and returns the remainder or modulus as result(float)."""
         return a % b

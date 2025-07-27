@@ -6,11 +6,18 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "dotenv>=0.9.9",
+    "edge-tts>=7.0.2",
+    "keyboard>=0.13.5",
     "llama-index>=0.12.52",
     "llama-index-core>=0.12.52.post1",
     "llama-index-llms-google-genai>=0.2.5",
     "llama-index-llms-ollama>=0.6.2",
+    "numpy>=2.3.2",
+    "pvleopard>=2.0.5",
     "pvporcupine>=3.0.5",
     "pvrecorder>=1.2.7",
+    "pygame>=2.6.1",
     "rich>=14.1.0",
+    "scipy>=1.16.0",
+    "sounddevice>=0.5.2",
 ]
