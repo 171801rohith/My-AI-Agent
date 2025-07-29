@@ -9,7 +9,7 @@ from rich.text import Text
 from Agents.agent_gemini import generateResponse
 from llama_index.core.llms import ChatMessage
 from Functions.wake_word import wake_sanctuary
-from Functions.play_audio import play_audio_and_print_response, play_intro
+from Functions.play_audio import play_audio_and_print_response, play_intro_outro
 from Functions.speech_to_text import speech_to_text, record_audio
 
 console = Console()
@@ -18,6 +18,8 @@ output_dir = "output_audios"
 input_dir = "input_audios"
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(input_dir, exist_ok=True)
+intro_path = "output_audios/intro.wav"
+outro_path = "output_audios/outro.wav"
 
 messages = []
 
@@ -44,7 +46,7 @@ async def main_loop():
         )
     )
     if wake_sanctuary():
-        await play_intro()
+        await play_intro_outro(intro_path)
         console.print(
             f"[bold white]Press and hold 'SPACE' to start recording 🎙️[/bold white]"
         )
@@ -57,10 +59,11 @@ async def main_loop():
                 prompt = speech_to_text()
             else:
                 continue
-            
+
             if check_for_termination(prompt.lower().split(" ")):
+                await play_intro_outro(outro_path)
                 break
-                
+
             messages.append({"role": "user", "content": prompt})
             chatMessages = [
                 ChatMessage(role=m["role"], content=m["content"]) for m in messages

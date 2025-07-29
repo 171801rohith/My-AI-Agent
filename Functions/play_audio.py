@@ -6,7 +6,7 @@ import pygame
 from Functions.text_to_speech import text_to_speech
 
 pygame.mixer.init()
-audio_path = "output_audios/audio_out.mp3"
+audio_path = "output_audios/audio_out.wav"
 
 
 async def play_audio_and_print_response(response_text: str, console: Console):

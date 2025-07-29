@@ -9,7 +9,7 @@ from rich.text import Text
 from Agents.agent_gemini import generateResponse
 from llama_index.core.llms import ChatMessage
 from Functions.wake_word import wake_sanctuary
-from Functions.play_audio import play_audio_and_print_response, play_intro
+from Functions.play_audio import play_audio_and_print_response, play_intro_outro
 
 console = Console()
 
@@ -17,6 +17,8 @@ output_dir = "output_audios"
 input_dir = "input_audios"
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(input_dir, exist_ok=True)
+intro_path = "output_audios/intro.wav"
+outro_path = "output_audios/outro.wav"
 
 messages = []
 
@@ -35,7 +37,7 @@ async def main_loop():
         )
     )
     if wake_sanctuary():
-        await play_intro()
+        await play_intro_outro(intro_path)
         while True:
             prompt = Prompt.ask("[bold cyan]You")
 
@@ -56,13 +58,22 @@ async def main_loop():
             response_text = str(response)
             messages.append({"role": "assistant", "content": response_text})
 
-            try:
-                await play_audio_and_print_response(
-                    response_text=response_text, console=console
+            # try:
+            #     await play_audio_and_print_response(
+            #         response_text=response_text, console=console
+            #     )
+            # except Exception as e:
+            #     console.print(f"[bold red]Error:[/bold red] {e}")
+            #     continue
+            console.print(
+                Panel(
+                    response_text,
+                    title="[magenta]Assistant",
+                    border_style="magenta",
+                    expand=True,
+                    title_align="left",
                 )
-            except Exception as e:
-                console.print(f"[bold red]Error:[/bold red] {e}")
-                continue
+            )
 
 
 if __name__ == "__main__":
