@@ -7,7 +7,6 @@ from Functions.text_to_speech import text_to_speech
 
 pygame.mixer.init()
 audio_path = "output_audios/audio_out.mp3"
-intro_path = "output_audios/intro.mp3"
 
 
 async def play_audio_and_print_response(response_text: str, console: Console):
@@ -31,9 +30,9 @@ async def play_audio_and_print_response(response_text: str, console: Console):
     await asyncio.sleep(0.2)
 
 
-async def play_intro():
+async def play_intro_outro(path):
     pygame.mixer.music.stop()
-    pygame.mixer.music.load(intro_path)
+    pygame.mixer.music.load(path)
     pygame.mixer.music.play()
     while pygame.mixer.music.get_busy():
         await asyncio.sleep(0.1)
