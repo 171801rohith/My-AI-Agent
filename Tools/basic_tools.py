@@ -28,7 +28,7 @@ class BasicTools:
         )
         open_url_tool = FunctionTool.from_defaults(
             fn=self.open_url,
-            description="""Opens a known website (e.g., 'youtube', 'leetcode') in the user's browser using the site_name string.""",
+            description="""Opens a known website (e.g., 'youtube', 'leetcode') in the user's default browser using the provided site name.""",
         )
 
         self.tools += [
@@ -37,7 +37,7 @@ class BasicTools:
             quotient_tool,
             remainder_tool,
             power_tool,
-            open_url_tool,
+            open_url_tool,                                                            
         ]
 
     def add(self, a: float, b: float) -> float:
