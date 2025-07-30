@@ -62,6 +62,6 @@ class BasicTools:
     def open_url(self, site_name: str) -> str:
         try:
             url = open_web_url(site_name)
-            return f"✅ Successfully opened {site_name} at {url}"
+            return f"Successfully opened {site_name} at {url}"
         except Exception as e:
-            return f"❌ Failed to open {site_name}. Error: {str(e)}"
+            return f"Failed to open {site_name}. Error: {str(e)}"

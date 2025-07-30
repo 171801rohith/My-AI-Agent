@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from config.system_prompt import react_system_prompt
 from Tools.basic_tools import BasicTools
+from Tools.app_file_tools import AppAndFileTools
 
 load_dotenv()
 
@@ -15,6 +16,9 @@ tools = []
 
 basicTools = BasicTools()
 tools += basicTools.tools
+
+appFileTools = AppAndFileTools()
+tools += appFileTools.tools
 
 
 agent = ReActAgent(
@@ -36,4 +40,4 @@ async def generateResponse(message: str, chatMessages: list) -> str:
             stream.append(ev.delta)
 
     response = await handler
-    return str(response)
+    return str(response)                                                                                                                                                                                                 

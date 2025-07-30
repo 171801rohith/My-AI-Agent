@@ -5,7 +5,7 @@ import os
 # async def text_to_speech(text: str) -> bool:
 #     try:
 #         base_dir = os.path.dirname(__file__)
-#         output_path = os.path.join(base_dir, "..", "output_audios", "audio_out.mp3")
+#         output_path = os.path.join(base_dir, "..", "output_audios", "audio_out.wav")
 #         if os.path.exists(output_path):
 #             os.remove(output_path)
 #         communicate = edge_tts.Communicate(
