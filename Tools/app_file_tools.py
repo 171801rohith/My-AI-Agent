@@ -18,20 +18,14 @@ class AppAndFileTools:
         open_directory_tool = FunctionTool.from_defaults(
             fn=self.open_directory,
             description="""
-                            Opens a directory in the file explorer using the given drive, base folder, and optional subfolders.
+                        Opens a directory in the system's file explorer using the provided full path.
 
-                            Args:
-                            - driver (str): Drive letter (e.g., 'C').
-                            - base_folder (str): Top-level folder name.
-                            - *sub_folders (str): Additional folders to complete the path.
+                        Args:
+                        - full_path (str): The absolute path to the directory (e.g., 'C:\\Users\\Rohit\\Documents').
 
-                            Returns:
-                            - str: Success or error message.
-
-                            Example:
-                            open_directory("R", "movies", "books")
-                            → Opens 'r:\\movies\\books'
-                        """,
+                        Returns:
+                        - str: Success or error message based on the outcome.
+                    """,
         )
 
         self.tools += [
@@ -59,4 +53,4 @@ class AppAndFileTools:
             os.startfile(full_path)
             return f"Successfully opened Directory."
         except Exception as e:
-            return f"Failed to open Directory. Error: {str(e)}"                                                                                                                                                             
+            return f"Failed to open Directory. Error: {str(e)}"
