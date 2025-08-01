@@ -2,6 +2,8 @@ import os
 from llama_index.core.tools import FunctionTool
 import AppOpener
 
+from Functions.renaming_to_episodes import rename_to_episodes
+
 
 class AppAndFileTools:
     def __init__(self):
@@ -27,11 +29,25 @@ class AppAndFileTools:
                         - str: Success or error message based on the outcome.
                     """,
         )
+        rename_files_to_episodes_tool = FunctionTool.from_defaults(
+            fn=self.rename_files_to_episodes,
+            description="""
+                        Opens a directory in the system's file explorer using the provided full path.
+                        And renames the files (episodes) to certain format.
+
+                        Args:
+                        - full_path (str): The absolute path to the directory (e.g., 'C:\\Users\\Rohit\\Documents').
+
+                        Returns:
+                        - str: Success or error message based on the outcome.
+                    """,
+        )
 
         self.tools += [
             open_app_tool,
             close_app_tool,
             open_directory_tool,
+            rename_files_to_episodes_tool,
         ]
 
     def open_app(self, app_name: str) -> str:
@@ -54,3 +70,10 @@ class AppAndFileTools:
             return f"Successfully opened Directory."
         except Exception as e:
             return f"Failed to open Directory. Error: {str(e)}"
+
+    def rename_files_to_episodes(self, full_path: str) -> str:
+        try:
+            rename_to_episodes(full_path=full_path)
+            return f"Successfully renamed to Episodes."
+        except Exception as e:
+            return f"Failed to rename. Error: {str(e)}"
