@@ -2,7 +2,7 @@ import os
 from llama_index.core.tools import FunctionTool
 import AppOpener
 
-from Functions.renaming_to_episodes import rename_to_episodes
+from Functions.modifing_files import rename_to_episodes, write_txt_file
 
 
 class AppAndFileTools:
@@ -42,12 +42,25 @@ class AppAndFileTools:
                         - str: Success or error message based on the outcome.
                     """,
         )
+        note_down_in_txt_tool = FunctionTool.from_defaults(
+            fn=self.note_down_in_txt,
+            description="""
+                        Writes a text file with content passed
+
+                        Args:
+                        - content (str): The content to be writtern to a text file.
+
+                        Returns:
+                        - str: Success or error message based on the outcome.
+                    """,
+        )
 
         self.tools += [
             open_app_tool,
             close_app_tool,
             open_directory_tool,
             rename_files_to_episodes_tool,
+            note_down_in_txt_tool,
         ]
 
     def open_app(self, app_name: str) -> str:
@@ -77,3 +90,12 @@ class AppAndFileTools:
             return f"Successfully renamed to Episodes."
         except Exception as e:
             return f"Failed to rename. Error: {str(e)}"
+
+    def note_down_in_txt(self, content: str) -> str:
+        path = "R:/MOVIES/Created By Sanctuary"
+        try:
+            write_txt_file(content, path)
+            os.startfile(path)
+            return f"Successfully Noted down to a text file."
+        except Exception as e:
+            return f"Failed to note down. Error: {str(e)}"

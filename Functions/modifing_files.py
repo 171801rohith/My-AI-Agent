@@ -12,3 +12,17 @@ def rename_to_episodes(full_path: str) -> str:
         os.rename(old_name, new_name)
 
     return f"Successfully renamed to Episodes"
+
+
+def write_txt_file(content: str, path: str):
+    i = 1
+    file_name = f"File_{i}.txt"
+    output_path = os.path.join(path, file_name)
+    while os.path.exists(output_path):
+        i += 1
+        file_name = f"File_{i}.txt"
+        output_path = os.path.join(path, file_name)
+    with open(output_path, "w") as file:
+        file.write(content)
+
+    return f"Successfully Noted down to a text file."

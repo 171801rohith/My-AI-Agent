@@ -34,10 +34,11 @@ ctx = Context(agent)
 
 async def generateResponse(message: str, chatMessages: list) -> str:
     stream = []
-    handler = agent.run(message, ctx=ctx)
+    handler = agent.run(message, ctx=ctx, chat_history=chatMessages)
     async for ev in handler.stream_events():
         if isinstance(ev, AgentStream):
             stream.append(ev.delta)
+            # print(f"{ev.delta}", end=" ", flush=True)
 
     response = await handler
-    return str(response)                                                                                                                                                                                                 
+    return str(response)
