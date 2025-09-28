@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from config.system_prompt import react_system_prompt
 from Tools.basic_tools import BasicTools
 from Tools.app_file_tools import AppAndFileTools
+from Tools.google_tools import GoogleTools
 
 load_dotenv()
 
@@ -19,6 +20,9 @@ tools += basicTools.tools
 
 appFileTools = AppAndFileTools()
 tools += appFileTools.tools
+
+googleTools = GoogleTools()
+tools += googleTools.tools
 
 
 agent = ReActAgent(

@@ -9,7 +9,7 @@ from Tools.basic_tools import Tools
 load_dotenv()
 
 llm = Ollama(
-    model="deepseek-r1",
+    model="phi4:14b",
     request_timeout=120.0,
     context_window=8000,
 )

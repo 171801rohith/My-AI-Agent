@@ -7,7 +7,7 @@ def rename_to_episodes(full_path: str) -> str:
     for i, episode in enumerate(episodes, start=1):
         old_name = os.path.join(full_path, episode)
         file_name = f"E0{i}" if i <= 9 else f"E{i}"
-        extension = episode[episode.index(".") :]
+        name, extension = os.path.splitext(episode)
         new_name = os.path.join(full_path, file_name + extension)
         os.rename(old_name, new_name)
 
