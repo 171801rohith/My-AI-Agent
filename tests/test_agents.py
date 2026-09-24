@@ -102,7 +102,7 @@ def contents(messages, role):
 def test_gemini_agent_registers_all_tools(agent_gemini):
     names = {t.metadata.name for t in agent_gemini.tools}
     assert {"add", "open_app", "rename_files_to_episodes", "send_mail"} <= names
-    assert len(names) == 13
+    assert len(names) == 22
 
 
 def test_gemini_agent_generates_response(agent_gemini):
@@ -186,3 +186,61 @@ def test_text_to_speech_raises_on_failure(monkeypatch):
 
     with pytest.raises(RuntimeError):
         asyncio.run(tts.text_to_speech("hello"))
+
+
+def test_conversation_is_saved_and_resumed_by_a_new_responder(agent_gemini):
+    from my_ai_agent.agents.common import make_responder
+
+    agent_gemini.fake_llm.script = ["pong", "you said ping"]
+    ask(agent_gemini, "ping")
+
+    restarted = make_responder(agent_gemini.agent)  # like starting the app again
+    assert restarted.resume_history() == 2
+    asyncio.run(restarted("what did I say?"))
+
+    last = agent_gemini.fake_llm.calls[-1]
+    assert contents(last, "user") == ["ping", "what did I say?"]
+    assert "pong" in contents(last, "assistant")
+
+
+def test_remembered_facts_are_in_the_system_prompt(monkeypatch, fresh_import):
+    from my_ai_agent import memory_store
+    from my_ai_agent.agents.common import build_agent
+
+    memory_store.add_fact("My name is Rohith")
+    agent = build_agent(ScriptedLLM(), [], native_tool_calling=True)
+
+    assert "- My name is Rohith" in agent.system_prompt
+
+
+def test_responder_streams_final_text_but_not_tool_steps(agent_gemini):
+    agent_gemini.fake_llm.script = [("add", {"a": 2, "b": 3}), "The answer is 5"]
+    deltas = []
+
+    reply = asyncio.run(agent_gemini.generateResponse("2 + 3?", on_text=deltas.append))
+
+    assert reply == "The answer is 5"
+    assert deltas == ["The answer is 5"]
+
+
+def test_react_agent_does_not_stream_scratch_text():
+    from my_ai_agent.agents.common import build_agent, make_responder
+
+    llm = ScriptedLLM()
+    responder = make_responder(build_agent(llm, [], native_tool_calling=False))
+    deltas = []
+
+    class Handler:
+        def __await__(self):
+            async def done():
+                return "final"
+            return done().__await__()
+
+        async def stream_events(self):
+            raise AssertionError("ReAct output must not be streamed")
+            yield
+
+    responder.agent = type("FakeReAct", (), {"run": lambda self, **kw: Handler()})()
+
+    assert asyncio.run(responder("hi", on_text=deltas.append)) == "final"
+    assert deltas == []

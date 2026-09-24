@@ -4,6 +4,7 @@ from llama_index.core.tools import FunctionTool
 import AppOpener
 
 from my_ai_agent.functions.file_ops import plan_episode_renames, rename_to_episodes, write_txt_file
+from my_ai_agent import action_log
 from my_ai_agent.tools import confirm as confirmation
 from my_ai_agent.settings import settings
 
@@ -81,6 +82,7 @@ class AppAndFileTools:
             return confirmation.CANCELLED
         try:
             AppOpener.close(app_name, throw_error=True, match_closest=True)
+            action_log.record("close_app", f"Closed {app_name}")
             return f"Successfully closed {app_name}."
         except Exception as e:
             logger.exception("Tool failed")
@@ -107,6 +109,11 @@ class AppAndFileTools:
             if not confirmation.confirm(f"Rename {len(plan)} files in {full_path}", details):
                 return confirmation.CANCELLED
             result = rename_to_episodes(full_path=full_path, plan=plan)
+            action_log.record(
+                "rename",
+                f"Renamed {len(plan)} files in {full_path} to episodes",
+                undo={"type": "rename", "folder": full_path, "renames": plan},
+            )
             os.startfile(full_path)
             return result
         except Exception as e:
@@ -117,9 +124,14 @@ class AppAndFileTools:
         path = settings.notes_dir
         try:
             os.makedirs(path, exist_ok=True)
-            write_txt_file(content, path)
+            note_path = write_txt_file(content, path)
+            action_log.record(
+                "note",
+                f"Wrote note {os.path.basename(note_path)} in {path}",
+                undo={"type": "delete_file", "path": note_path},
+            )
             os.startfile(path)
-            return f"Successfully Noted down to a text file."
+            return f"Successfully noted down to {os.path.basename(note_path)}."
         except Exception as e:
             logger.exception("Tool failed")
             return f"Failed to note down. Error: {str(e)}"

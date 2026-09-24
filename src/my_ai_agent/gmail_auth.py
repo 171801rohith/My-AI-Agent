@@ -10,13 +10,21 @@ from my_ai_agent.settings import PROJECT_ROOT
 TOKEN_PATH = str(PROJECT_ROOT / "token.json")
 CREDENTIALS_PATH = str(PROJECT_ROOT / "credentials.json")
 
-SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
+# compose: create drafts and send; readonly: list, search and read mail.
+SCOPES = [
+    "https://www.googleapis.com/auth/gmail.compose",
+    "https://www.googleapis.com/auth/gmail.readonly",
+]
 
 
 def load_credentials() -> Credentials:
     creds = None
     if os.path.exists(TOKEN_PATH):
-        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+        # Load without passing SCOPES: that would overwrite the scopes stored in the
+        # file and hide a token that was granted fewer permissions than we now need.
+        creds = Credentials.from_authorized_user_file(TOKEN_PATH)
+        if not creds.has_scopes(SCOPES):
+            creds = None  # older token (e.g. send-only): sign in again for new scopes
 
     if creds and creds.valid:
         return creds

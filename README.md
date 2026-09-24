@@ -6,8 +6,12 @@ Sanctuary is a Windows AI agent you can talk to by text or voice. It answers usi
 
 - **Text and voice chat** through one command. Voice uses an offline wake word ("Hey Jarvis"), push-to-talk, offline speech-to-text (Whisper) and spoken replies.
 - **Two model options:** Gemini (`gemini-2.5-flash`), or a local `hermes3:8b` through Ollama. Both use native tool calling.
-- **Tools:** math, opening apps, websites and folders, notes, renaming episodes, and sending Gmail.
-- **Safety:** sending email, closing apps and renaming files show the exact action and wait for y/N.
+- **Tools:** math, opening apps, websites and folders, notes, and renaming episodes.
+- **Gmail:** list unread mail, search, read and summarize messages, create drafts (the default), and send (with confirmation).
+- **Memory:** "remember that…" facts persist across runs, and the last conversation is resumed at startup (`--fresh` to skip).
+- **Undo:** "what have you done?" and "undo that" for renames, notes and drafts. Every action is recorded in `logs/actions.jsonl`.
+- **Streaming voice:** replies are spoken sentence by sentence while they are still being generated.
+- **Safety:** sending email, closing apps, renaming files and undoing show the exact action and wait for y/N. Email content is treated as untrusted data.
 - **Logs** in `logs/sanctuary.log`, including every approved or declined action.
 
 ## Requirements
@@ -39,11 +43,14 @@ uv run sanctuary                     # text chat with Gemini
 uv run sanctuary --mode voice        # voice chat: say "Hey Jarvis", hold SPACE to talk
 uv run sanctuary --model ollama      # use the local Ollama model
 uv run sanctuary --wake              # text chat, but wait for the wake word first
+uv run sanctuary --fresh             # don't resume the previous conversation
 ```
 
 To end a chat, type `exit` or `quit`, or say "exit chat". `python -m my_ai_agent` works as well.
 
-On the first voice run, the wake word model (about 5 MB) and Whisper model (about 150 MB) download automatically. After that, voice runs fully offline. The first email you send opens a browser to sign in to Google once.
+On the first voice run, the wake word model (about 5 MB) and Whisper model (about 150 MB) download automatically. After that, voice runs fully offline. The first Gmail action opens a browser to sign in to Google once. Sign in again if the app asks after an update that needs new Gmail permissions.
+
+Remembered facts and the recent conversation are stored in `data/`. Delete that folder to wipe the agent's memory.
 
 ## Configuration
 
@@ -74,6 +81,8 @@ src/my_ai_agent/
 ├── functions/        # file and browser helpers used by the tools
 ├── audio/            # wake word, speech-to-text, text-to-speech, playback
 ├── gmail_auth.py     # Google sign-in and token refresh
+├── action_log.py     # record of actions taken, used by undo
+├── memory_store.py   # remembered facts and recent conversation on disk
 └── assets/           # intro and outro sounds
 tests/                # offline pytest suite (run with: uv run pytest)
 IMPROVEMENTS.md       # roadmap of fixes and planned features

@@ -1,9 +1,10 @@
 """Start Sanctuary.
 
-    uv run main.py                     # text chat with Gemini
-    uv run main.py --mode voice        # voice chat (wake word, push-to-talk, spoken replies)
-    uv run main.py --model ollama      # use the local Ollama model instead of Gemini
-    uv run main.py --wake              # text chat, but wait for the wake word first
+    uv run sanctuary                   # text chat with Gemini
+    uv run sanctuary --mode voice      # voice chat (wake word, push-to-talk, spoken replies)
+    uv run sanctuary --model ollama    # use the local Ollama model instead of Gemini
+    uv run sanctuary --wake            # text chat, but wait for the wake word first
+    uv run sanctuary --fresh           # don't resume the previous conversation
 """
 
 import argparse
@@ -35,6 +36,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help="wait for the wake word first (default: on for voice, off for text)",
     )
+    parser.add_argument(
+        "--fresh", action="store_true", help="start without the previous conversation"
+    )
     args = parser.parse_args(argv)
     if args.wake is None:
         args.wake = args.mode == "voice"
@@ -55,10 +59,18 @@ async def main(args: argparse.Namespace, console: Console | None = None) -> None
     from my_ai_agent.audio.wake_word import wake_sanctuary
 
     console = console or Console()
-    logger.info("Starting: mode=%s model=%s wake=%s", args.mode, args.model, args.wake)
+    logger.info(
+        "Starting: mode=%s model=%s wake=%s fresh=%s", args.mode, args.model, args.wake, args.fresh
+    )
 
     with console.status(f"Loading {args.model} agent..."):
         respond = load_responder(args.model)
+    if not args.fresh:
+        resumed = respond.resume_history()
+        if resumed:
+            console.print(
+                f"[italic grey]Resumed {resumed} earlier messages. Start with --fresh to begin a new conversation.[/italic grey]"
+            )
 
     if args.mode == "voice":
         source, sink = VoiceInput(console), VoiceOutput(console)

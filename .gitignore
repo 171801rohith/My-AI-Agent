@@ -25,3 +25,6 @@ notes/
 
 # Application logs
 logs/
+
+# Long-term memory (remembered facts and recent conversation)
+data/

@@ -23,11 +23,16 @@ def plan_episode_renames(full_path: str) -> list[tuple[str, str]]:
 
 
 def rename_to_episodes(full_path: str, plan: list[tuple[str, str]] | None = None) -> str:
-    """Rename files to E01, E02, ... in two phases so that existing names such as
-    E01.mkv cannot collide. If anything fails, completed renames are rolled back."""
+    """Rename files to E01, E02, ... (see apply_renames for the safety guarantees)."""
     if plan is None:
         plan = plan_episode_renames(full_path)
+    apply_renames(full_path, plan)
+    return f"Successfully renamed {len(plan)} files to Episodes"
 
+
+def apply_renames(full_path: str, plan: list[tuple[str, str]]) -> None:
+    """Rename (old, new) pairs in two phases so that existing names such as E01.mkv
+    cannot collide. If anything fails, completed renames are rolled back."""
     done = []  # (current_path, original_path) for rollback
     try:
         temp_paths = []
@@ -47,10 +52,9 @@ def rename_to_episodes(full_path: str, plan: list[tuple[str, str]] | None = None
             os.rename(current, previous)
         raise
 
-    return f"Successfully renamed {len(plan)} files to Episodes"
 
-
-def write_txt_file(content: str, path: str):
+def write_txt_file(content: str, path: str) -> str:
+    """Write content to the next free File_N.txt in path and return the file's path."""
     i = 1
     file_name = f"File_{i}.txt"
     output_path = os.path.join(path, file_name)
@@ -61,4 +65,4 @@ def write_txt_file(content: str, path: str):
     with open(output_path, "w") as file:
         file.write(content)
 
-    return f"Successfully Noted down to a text file."
+    return output_path

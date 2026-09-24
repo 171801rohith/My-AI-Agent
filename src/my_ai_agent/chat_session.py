@@ -35,7 +35,9 @@ class MessageSource(Protocol):
 
 
 class ReplySink(Protocol):
-    async def show(self, text: str) -> None: ...
+    def on_text(self, delta: str) -> None: ...  # streamed reply text, as it arrives
+    async def show(self, text: str) -> None: ...  # the complete reply
+    async def abort(self) -> None: ...  # the reply failed part-way
 
 
 class TextInput:
@@ -82,30 +84,60 @@ class ConsoleOutput:
     def __init__(self, console: Console):
         self.console = console
 
+    def on_text(self, delta: str) -> None:
+        pass
+
     async def show(self, text: str) -> None:
         self.console.print(panel(text, "Assistant", "magenta"))
 
+    async def abort(self) -> None:
+        pass
+
 
 class VoiceOutput:
+    """Speaks each sentence as soon as it has streamed in, then shows the full reply."""
+
     def __init__(self, console: Console):
         self.console = console
+        self.speaker = None
 
-    async def show(self, text: str) -> None:
-        from my_ai_agent.audio.play_audio import play_audio_and_print_response
+    def on_text(self, delta: str) -> None:
+        from my_ai_agent.audio.play_audio import SentenceSpeaker
 
         try:
-            await play_audio_and_print_response(response_text=text, console=self.console)
+            if self.speaker is None:
+                self.speaker = SentenceSpeaker()
+            self.speaker.feed(delta)
+        except Exception:
+            logger.exception("Could not start streaming speech")  # show() still prints the text
+
+    async def show(self, text: str) -> None:
+        from my_ai_agent.audio.play_audio import speak
+
+        speaker, self.speaker = self.speaker, None
+        self.console.print(panel(text, "Assistant", "magenta"))
+        try:
+            if speaker is not None and speaker.spoke_anything:
+                await speaker.finish()
+            else:  # nothing was streamed: speak the whole reply
+                if speaker is not None:
+                    await speaker.cancel()
+                await speak(text)
         except Exception as e:
-            # Speech failed: still show the reply rather than losing it.
+            # Speech failed: the reply is already on screen, so nothing is lost.
             logger.exception("Text-to-speech failed")
-            self.console.print(panel(text, "Assistant", "magenta"))
             self.console.print(f"[bold red]Speech error:[/bold red] {e}")
+
+    async def abort(self) -> None:
+        speaker, self.speaker = self.speaker, None
+        if speaker is not None:
+            await speaker.cancel()
 
 
 class ChatSession:
     def __init__(
         self,
-        respond: Callable[[str], Awaitable[str]],
+        respond: Callable[..., Awaitable[str]],  # respond(message, on_text=callback)
         source: MessageSource,
         sink: ReplySink,
         console: Console,
@@ -125,9 +157,10 @@ class ChatSession:
                 return
 
             try:
-                reply = await self.respond(message)
+                reply = await self.respond(message, on_text=self.sink.on_text)
             except Exception as e:
                 logger.exception("Agent failed to respond")
+                await self.sink.abort()
                 self.console.print(f"[bold red]Error:[/bold red] {e}")
                 continue
 

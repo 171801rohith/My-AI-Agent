@@ -58,3 +58,24 @@ def confirm_answer(monkeypatch):
 
     monkeypatch.setattr(confirmation, "confirm", fake_confirm)
     return answer
+
+
+@pytest.fixture(autouse=True)
+def action_log_file(tmp_path, monkeypatch):
+    """Keep every test's action log in a temp file, never the real logs/ folder."""
+    from my_ai_agent import action_log
+
+    path = tmp_path.parent / f"{tmp_path.name}-actions.jsonl"
+    monkeypatch.setattr(action_log, "ACTION_LOG_PATH", path)
+    return path
+
+
+@pytest.fixture(autouse=True)
+def memory_files(tmp_path, monkeypatch):
+    """Keep remembered facts and conversation history in temp files during tests."""
+    from my_ai_agent import memory_store
+
+    data = tmp_path.parent / f"{tmp_path.name}-data"
+    monkeypatch.setattr(memory_store, "FACTS_PATH", data / "memory.json")
+    monkeypatch.setattr(memory_store, "HISTORY_PATH", data / "conversation.json")
+    return data

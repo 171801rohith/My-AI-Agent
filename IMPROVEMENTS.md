@@ -33,7 +33,8 @@ Result before the fixes: **32 passed, 14 xfailed**. After fixes 1–11: **64 pas
   - Logging goes to `logs/sanctuary.log`.
 
   **Note:** the fix tables below use the old file paths (`Tools/`, `Functions/`, `Agents/`, `service.py`). See the README for the new layout. 93 tests pass.
-- [ ] **Part 2 features.** Not started.
+- [x] **Part 2 ★★★ features 1, 2, 7, 12 and 17.** Done: Gmail read/search/summarize, drafts by default, streaming spoken replies, long-term memory (facts and resumed conversation), and the action log with undo.
+- [ ] **Remaining Part 2 features** (3–6, 8–11, 13–16, 18).
 - **One-time action:** the next email sent will open a browser sign-in and create `token.json`. After that, `token.pickle` can be deleted.
 
 - **Passed:** the core behavior works. This covers the math tools, opening known URLs and apps, creating notes, building and sending the Gmail message, reusing a cached Gmail token, detecting the exit phrase in voice chat, and a full agent turn (prompt, then ReAct answer) with an offline LLM.
