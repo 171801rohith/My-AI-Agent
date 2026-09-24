@@ -17,7 +17,14 @@ Result before the fixes: **32 passed, 14 xfailed**. After fixes 1–11: **64 pas
 
 - [x] **P0 fixes 1–5.** Done, except the "restrict file tools to configured root folders" part of fix 1, which waits for the settings module (fix 15). Old recordings are still in git history; see fix 2.
 - [x] **P1 fixes 6–11.** Done. Live runs against Gemini and Ollama are still to be checked by hand.
-- [ ] **P2 fixes 12–15.**
+- [x] **P2 fixes 12–15.** Done:
+  - `config/settings.py` loads configuration once.
+  - Picovoice Leopard is replaced by offline faster-whisper, recording into memory (Leopard failed with the same activation error as Porcupine).
+  - No busy-wait for the spacebar.
+  - The Whisper model and audio mixer are each created once, on first use.
+  - The wake word moved to openWakeWord ("Hey Jarvis").
+
+  Deferred to feature 7 (streaming voice replies): moving `pyttsx3` off the event loop and removing the TTS file round trip. `pyttsx3`'s Windows speech engine is unreliable in worker threads, and nothing else runs concurrently yet.
 - [ ] **P3 fixes 16–19.**
 - **One-time action:** the next email sent will open a browser sign-in and create `token.json`. After that, `token.pickle` can be deleted.
 

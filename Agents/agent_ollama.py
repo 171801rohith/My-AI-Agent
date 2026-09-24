@@ -1,9 +1,10 @@
 from llama_index.llms.ollama import Ollama
 
 from Agents.common import build_agent, build_tools, make_responder
+from config.settings import settings
 
 llm = Ollama(
-    model="hermes3:8b",
+    model=settings.ollama_model,
     request_timeout=120.0,
     context_window=8000,
 )

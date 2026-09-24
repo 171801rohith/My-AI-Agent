@@ -15,8 +15,9 @@ def voice_chat(stub_modules, fresh_import):
                 "play_intro_outro": fake_async,
             },
             "Functions.speech_to_text": {
-                "speech_to_text": lambda: "",
-                "record_audio": lambda console: False,
+                "speech_to_text": lambda audio: "",
+                "record_audio": lambda console: None,
+                "load_model": lambda: None,
             },
         }
     )

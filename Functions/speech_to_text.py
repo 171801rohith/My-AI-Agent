@@ -1,44 +1,53 @@
-import pvleopard
-import sounddevice as sd
-from dotenv import load_dotenv
-import os
-from scipy.io.wavfile import write
 import keyboard
-from rich.console import Console
 import numpy as np
+import sounddevice as sd
+from faster_whisper import WhisperModel
+from rich.console import Console
 
-load_dotenv()
-base_dir = os.path.dirname(__file__)
-audio_path = os.path.join(base_dir, "..", "input_audios", "audio_in.wav")
+from config.settings import settings
+
+SAMPLE_RATE = 16000  # Whisper works on 16 kHz mono audio
+
+_model: WhisperModel | None = None
 
 
-def speech_to_text() -> str:
-    leopard = pvleopard.create(access_key=os.getenv("PICOVOICE_API_KEY"))
-    transcript, words = leopard.process_file(audio_path)
-    return transcript
+def load_model() -> WhisperModel:
+    """Load the Whisper model once and reuse it. The first call downloads it."""
+    global _model
+    if _model is None:
+        _model = WhisperModel(settings.whisper_model, device="cpu", compute_type="int8")
+    return _model
 
 
-def record_audio(console: Console) -> bool:
-    fs = 44100
+def speech_to_text(audio: np.ndarray) -> str:
+    """Transcribe a mono float32 recording, fully offline."""
+    # English-only models (*.en) skip language detection; others detect it.
+    language = "en" if settings.whisper_model.endswith(".en") else None
+    segments, _ = load_model().transcribe(
+        audio, language=language, beam_size=1, vad_filter=True
+    )
+    return " ".join(segment.text.strip() for segment in segments).strip()
+
+
+def record_audio(console: Console) -> np.ndarray | None:
+    """Record while SPACE is held. Returns the audio in memory, or None if empty."""
     recording = []
 
     def callback(indata, frames, time, status):
         recording.append(indata.copy())
 
-    while not keyboard.is_pressed("space"):
-        pass
+    keyboard.wait("space")  # blocks on a key event instead of spinning the CPU
 
     console.print(f"[bold blue]Recording...[/bold blue]")
 
-    with sd.InputStream(samplerate=fs, channels=2, callback=callback):
+    with sd.InputStream(
+        samplerate=SAMPLE_RATE, channels=1, dtype="float32", callback=callback
+    ):
         while keyboard.is_pressed("space"):
-            sd.sleep(100)
+            sd.sleep(50)
 
     console.print(f"[bold green]Done Recording[/bold green]")
 
-    if recording:
-        sound_out = np.concatenate(recording, axis=0)
-        write(audio_path, fs, sound_out)
-        return True
-    else:
-        return False
+    if not recording:
+        return None
+    return np.concatenate(recording, axis=0).flatten()

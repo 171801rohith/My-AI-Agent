@@ -1,11 +1,9 @@
 from llama_index.llms.google_genai import GoogleGenAI
-from dotenv import load_dotenv
 
 from Agents.common import build_agent, build_tools, make_responder
+from config.settings import settings
 
-load_dotenv()
-
-llm = GoogleGenAI(model="gemini-2.5-flash")
+llm = GoogleGenAI(model=settings.gemini_model, api_key=settings.require("google_api_key"))
 tools = build_tools()
 
 # Gemini supports native tool calling, so no text format has to be parsed.

@@ -78,8 +78,14 @@ def agent_gemini(monkeypatch, fresh_import):
     """Import Agents.agent_gemini with Gemini swapped for an offline scripted LLM."""
     import llama_index.llms.google_genai as google_genai
 
+    import config.settings as config_settings
+
     llm = ScriptedLLM()
     monkeypatch.setattr(google_genai, "GoogleGenAI", lambda **kwargs: llm)
+    # Don't depend on a real key in .env.
+    monkeypatch.setattr(
+        config_settings, "settings", config_settings.Settings(google_api_key="test-key")
+    )
     module = fresh_import("Agents.agent_gemini")
     module.fake_llm = llm
     return module

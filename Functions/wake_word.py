@@ -3,9 +3,11 @@ import pyaudio
 from openwakeword.model import Model
 from openwakeword.utils import download_models
 
+from config.settings import settings
+
 # Built-in openWakeWord model; runs fully offline, no API key.
-WAKE_WORD = "hey_jarvis"
-THRESHOLD = 0.5  # detection score 0..1; raise to reduce false triggers
+WAKE_WORD = settings.wake_word
+THRESHOLD = settings.wake_threshold  # detection score 0..1; raise to reduce false triggers
 
 SAMPLE_RATE = 16000  # openWakeWord expects 16 kHz, 16-bit, mono audio
 FRAME_SIZE = 1280  # 80 ms, the frame length the models are trained on
