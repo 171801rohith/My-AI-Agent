@@ -1,5 +1,9 @@
+import logging
+
 from llama_index.core.tools import FunctionTool
-from Functions.open_url import open_web_url
+from my_ai_agent.functions.open_url import open_web_url
+
+logger = logging.getLogger(__name__)
 
 
 class BasicTools:
@@ -73,4 +77,5 @@ class BasicTools:
             url = open_web_url(site_name)
             return f"Successfully opened {site_name} at {url}"
         except Exception as e:
+            logger.warning("open_url failed: %s", e)
             return f"Failed to open {site_name}. Error: {str(e)}"

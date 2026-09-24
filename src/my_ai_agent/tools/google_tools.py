@@ -2,10 +2,13 @@ from llama_index.core.tools import FunctionTool
 from email.message import EmailMessage
 import base64
 import html
+import logging
 
 
-from service import get_gmail_service
-from Tools import confirm as confirmation
+from my_ai_agent.gmail_auth import get_gmail_service
+from my_ai_agent.tools import confirm as confirmation
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleTools:
@@ -59,8 +62,9 @@ class GoogleTools:
             send_message = (
                 gmail.users().messages().send(userId="me", body=create_msg).execute()
             )
-            print(f'Message Id: {send_message["id"]}')
+            logger.info("Sent mail to %s (message id %s)", to, send_message["id"])
 
             return f"Successfully sent a mail: {to}."
         except Exception as e:
+            logger.exception("send_mail failed")
             return f"Failed to send a mail. Error: {str(e)}"

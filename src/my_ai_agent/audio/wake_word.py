@@ -3,7 +3,7 @@ import pyaudio
 from openwakeword.model import Model
 from openwakeword.utils import download_models
 
-from config.settings import settings
+from my_ai_agent.settings import settings
 
 # Built-in openWakeWord model; runs fully offline, no API key.
 WAKE_WORD = settings.wake_word

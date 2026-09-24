@@ -7,9 +7,9 @@ from llama_index.core.llms import ChatMessage, ChatResponse, LLMMetadata
 from llama_index.core.llms.function_calling import FunctionCallingLLM
 from llama_index.core.llms.llm import ToolSelection
 
-from config.system_prompt import persona_prompt
-from Functions import text_to_speech as tts
-from Tools.basic_tools import BasicTools
+from my_ai_agent.persona import persona_prompt
+from my_ai_agent.audio import text_to_speech as tts
+from my_ai_agent.tools.basic_tools import BasicTools
 
 
 class ScriptedLLM(FunctionCallingLLM):
@@ -75,10 +75,10 @@ class ScriptedLLM(FunctionCallingLLM):
 
 @pytest.fixture
 def agent_gemini(monkeypatch, fresh_import):
-    """Import Agents.agent_gemini with Gemini swapped for an offline scripted LLM."""
+    """Import my_ai_agent.agents.gemini with Gemini swapped for an offline scripted LLM."""
     import llama_index.llms.google_genai as google_genai
 
-    import config.settings as config_settings
+    import my_ai_agent.settings as config_settings
 
     llm = ScriptedLLM()
     monkeypatch.setattr(google_genai, "GoogleGenAI", lambda **kwargs: llm)
@@ -86,7 +86,7 @@ def agent_gemini(monkeypatch, fresh_import):
     monkeypatch.setattr(
         config_settings, "settings", config_settings.Settings(google_api_key="test-key")
     )
-    module = fresh_import("Agents.agent_gemini")
+    module = fresh_import("my_ai_agent.agents.gemini")
     module.fake_llm = llm
     return module
 
@@ -150,7 +150,7 @@ def test_conversation_is_remembered_between_turns(agent_gemini):
 
 
 def test_ollama_agent_uses_hermes3_with_native_tool_calling(fresh_import):
-    agent_ollama = fresh_import("Agents.agent_ollama")
+    agent_ollama = fresh_import("my_ai_agent.agents.ollama")
 
     assert agent_ollama.llm.model == "hermes3:8b"
     assert type(agent_ollama.agent).__name__ == "FunctionAgent"
@@ -158,7 +158,7 @@ def test_ollama_agent_uses_hermes3_with_native_tool_calling(fresh_import):
 
 
 def test_react_agent_keeps_full_format_and_persona():
-    from Agents.common import build_agent
+    from my_ai_agent.agents.common import build_agent
 
     tools = BasicTools().tools
     agent = build_agent(ScriptedLLM(), tools, native_tool_calling=False)
@@ -171,7 +171,7 @@ def test_react_agent_keeps_full_format_and_persona():
 
 
 def test_both_agents_expose_the_same_tools(agent_gemini, fresh_import):
-    agent_ollama = fresh_import("Agents.agent_ollama")
+    agent_ollama = fresh_import("my_ai_agent.agents.ollama")
 
     gemini = {t.metadata.name for t in agent_gemini.tools}
     assert {t.metadata.name for t in agent_ollama.tools} == gemini

@@ -1,12 +1,6 @@
 import webbrowser
 
-WEB_URLS = {
-    "youtube": "https://www.youtube.com/",
-    "hotstar": "https://www.hotstar.com/in/mypage",
-    "chatgpt": "https://chatgpt.com/",
-    "leetcode": "https://leetcode.com/problemset/",
-    "github": "https://github.com/171801rohith",
-}
+from my_ai_agent.websites import WEB_URLS
 
 
 def open_web_url(web_name: str) -> str:

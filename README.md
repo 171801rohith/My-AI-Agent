@@ -1,79 +1,91 @@
 # My-AI-Agent
 
-A Python-based AI agent platform designed for interactive chat and voice-based experiences. This repository provides the foundational components for building, configuring, and running conversational agents that can process text and audio inputs, generate intelligent responses, and interact using various tools and models.
+Sanctuary is a Windows AI agent you can talk to by text or voice. It answers using Gemini or a local Ollama model, and it can take actions on your PC: open apps and websites, take notes, rename episode files, send email and do quick calculations. Actions that can't be undone ask for your confirmation first.
 
 ## Features
 
-- **Live Chat and Voice Chat**: Supports both real-time text-based and voice-based conversations.
-- **Modular Agents**: Easily add or customize agents for different use cases.
-- **Extensible Tools**: Integrate custom tools for enhanced agent capabilities.
-- **Audio Input/Output**: Handles audio data for speech-to-text and text-to-speech.
-- **Configurable Architecture**: Store and manage configuration and model data for flexible agent behavior.
+- **Text and voice chat** through one command. Voice uses an offline wake word ("Hey Jarvis"), push-to-talk, offline speech-to-text (Whisper) and spoken replies.
+- **Two model options:** Gemini (`gemini-2.5-flash`), or a local `hermes3:8b` through Ollama. Both use native tool calling.
+- **Tools:** math, opening apps, websites and folders, notes, renaming episodes, and sending Gmail.
+- **Safety:** sending email, closing apps and renaming files show the exact action and wait for y/N.
+- **Logs** in `logs/sanctuary.log`, including every approved or declined action.
 
-## Repository Structure
+## Requirements
 
-```
-.
-├── Agents/           # Agent definitions and logic
-├── Functions/        # Utility and processing functions
-├── Tools/            # Tools and plugins for agent enhancement
-├── config/           # Configuration files and settings
-├── input_audios/     # Directory for input audio files
-├── output_audios/    # Directory for output audio files
-├── main_live_chat.py # Entry point for live chat interface
-├── main_voice_chat.py# Entry point for voice chat interface
-├── .gitignore
-├── .python-version
-├── pyproject.toml    # Dependencies and Python project configuration
-├── uv.lock           # Package lock file
-├── test.py           # Test scripts
-└── README.md
+- Windows (the app uses `os.startfile`, AppOpener and Windows speech)
+- Python 3.12 and [uv](https://docs.astral.sh/uv/)
+- For Gemini: a `GOOGLE_API_KEY`
+- For the local model: [Ollama](https://ollama.com/) with `ollama pull hermes3:8b`
+- For sending email: a Google OAuth `credentials.json` in the project folder
+
+## Installation
+
+```bash
+git clone https://github.com/171801rohith/My-AI-Agent.git
+cd My-AI-Agent
+uv sync
 ```
 
-## Getting Started
+Create a `.env` file in the project folder:
 
-### Prerequisites
+```
+GOOGLE_API_KEY=your-key
+```
 
-- Python (see `.python-version` for specific version)
-- Dependencies listed in `pyproject.toml`
+## Usage
 
-### Installation
+```bash
+uv run sanctuary                     # text chat with Gemini
+uv run sanctuary --mode voice        # voice chat: say "Hey Jarvis", hold SPACE to talk
+uv run sanctuary --model ollama      # use the local Ollama model
+uv run sanctuary --wake              # text chat, but wait for the wake word first
+```
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/171801rohith/My-AI-Agent.git
-    cd My-AI-Agent
-    ```
-2. Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-    Or use the preferred method from `pyproject.toml`.
+To end a chat, type `exit` or `quit`, or say "exit chat". `python -m my_ai_agent` works as well.
 
-### Usage
+On the first voice run, the wake word model (about 5 MB) and Whisper model (about 150 MB) download automatically. After that, voice runs fully offline. The first email you send opens a browser to sign in to Google once.
 
-- **Live Chat**:  
-  Run the following to start the live chat agent:
-  ```bash
-  python main_live_chat.py
-  ```
+## Configuration
 
-- **Voice Chat**:  
-  For interactive voice conversations:
-  ```bash
-  python main_voice_chat.py
-  ```
+Every setting has a default and can be overridden in `.env`:
 
-## Customization
+| Variable | Default | Purpose |
+|---|---|---|
+| `GOOGLE_API_KEY` | none | Required for `--model gemini` |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | Gemini model |
+| `OLLAMA_MODEL` | `hermes3:8b` | Local model (needs tool-calling support) |
+| `WAKE_WORD` | `hey_jarvis` | Built-in openWakeWord model |
+| `WAKE_THRESHOLD` | `0.5` | Raise it if the wake word triggers by mistake |
+| `WHISPER_MODEL` | `base.en` | Use `small.en` for better accuracy at the cost of speed |
+| `NOTES_DIR` | `<project>/notes` | Where the notes tool writes |
 
-- Add or modify agents in the `Agents/` directory.
-- Enhance agent abilities with new functions in `Functions/` or tools in `Tools/`.
-- Adjust configuration in `config/`.
-- The wake word is "Hey Jarvis" (openWakeWord, fully offline). Change `WAKE_WORD` and `THRESHOLD` in `Functions/wake_word.py`. The model files download automatically on the first run.
+To add website shortcuts, edit `src/my_ai_agent/websites.py`.
 
-## Contributing
+## Project structure
 
-Pull requests and suggestions are welcome! Please fork the repository and submit your changes.
+```
+src/my_ai_agent/
+├── cli.py            # `sanctuary` command: picks mode, model and wake word
+├── chat_session.py   # conversation loop shared by text and voice
+├── settings.py       # all configuration, loaded from .env once
+├── persona.py        # Sanctuary's system prompt
+├── agents/           # Gemini and Ollama agents (common.py builds both)
+├── tools/            # tools the agent can call, and the confirmation prompt
+├── functions/        # file and browser helpers used by the tools
+├── audio/            # wake word, speech-to-text, text-to-speech, playback
+├── gmail_auth.py     # Google sign-in and token refresh
+└── assets/           # intro and outro sounds
+tests/                # offline pytest suite (run with: uv run pytest)
+IMPROVEMENTS.md       # roadmap of fixes and planned features
+```
+
+## Development
+
+```bash
+uv run pytest
+```
+
+The tests run fully offline: models, Gmail, audio devices and the browser are all faked.
 
 ## License
 

@@ -43,7 +43,7 @@ def fresh_import(monkeypatch):
 def confirm_answer(monkeypatch):
     """Auto-approve confirmation prompts so tests never block on input.
     Set `confirm_answer.approve = False` in a test to simulate declining."""
-    from Tools import confirm as confirmation
+    from my_ai_agent.tools import confirm as confirmation
 
     class Answer:
         approve = True

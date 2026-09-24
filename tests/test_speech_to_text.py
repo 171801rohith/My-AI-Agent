@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from rich.console import Console
 
-from Functions import speech_to_text as stt
+from my_ai_agent.audio import speech_to_text as stt
 
 
 class FakeWhisper:

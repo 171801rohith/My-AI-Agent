@@ -4,7 +4,7 @@ import sounddevice as sd
 from faster_whisper import WhisperModel
 from rich.console import Console
 
-from config.settings import settings
+from my_ai_agent.settings import settings
 
 SAMPLE_RATE = 16000  # Whisper works on 16 kHz mono audio
 

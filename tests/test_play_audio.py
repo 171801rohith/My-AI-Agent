@@ -1,7 +1,7 @@
 import asyncio
 from unittest.mock import MagicMock
 
-from Functions import play_audio
+from my_ai_agent.audio import play_audio
 
 
 def test_mixer_starts_on_first_playback_only(monkeypatch):

@@ -1,7 +1,7 @@
 import pytest
 
-from Functions import open_url
-from Tools.basic_tools import BasicTools
+from my_ai_agent.functions import open_url
+from my_ai_agent.tools.basic_tools import BasicTools
 
 
 @pytest.fixture

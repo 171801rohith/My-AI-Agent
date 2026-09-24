@@ -1,6 +1,6 @@
 import pytest
 
-from config.settings import MissingSettingError, Settings
+from my_ai_agent.settings import MissingSettingError, Settings
 
 
 @pytest.fixture

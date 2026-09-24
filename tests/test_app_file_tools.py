@@ -1,7 +1,8 @@
 import pytest
 
-from Tools import app_file_tools
-from Tools.app_file_tools import AppAndFileTools
+from my_ai_agent.tools import app_file_tools
+from my_ai_agent.tools.app_file_tools import AppAndFileTools
+from my_ai_agent.settings import Settings
 
 
 @pytest.fixture
@@ -68,12 +69,14 @@ def test_rename_files_to_episodes_reports_errors(tools, tmp_path, no_startfile):
     assert tools.rename_files_to_episodes(str(tmp_path / "missing")).startswith("Failed")
 
 
-def test_note_down_in_txt(tools, monkeypatch, no_startfile):
-    written = []
-    monkeypatch.setattr(app_file_tools, "write_txt_file", lambda c, p: written.append((c, p)))
+def test_note_down_in_txt_uses_configured_folder(tools, tmp_path, monkeypatch, no_startfile):
+    notes = tmp_path / "notes"  # does not exist yet
+    monkeypatch.setattr(app_file_tools, "settings", Settings(notes_dir=str(notes)))
 
     assert tools.note_down_in_txt("hello").startswith("Successfully")
-    assert written == [("hello", "R:/MOVIES/Created By Sanctuary")]
+    assert (notes / "File_1.txt").read_text() == "hello"
+    assert no_startfile == [str(notes)]
+
 
 
 def test_declined_close_app_does_nothing(tools, fake_appopener, confirm_answer):

@@ -1,7 +1,7 @@
 import pytest
 
-from Functions import modifing_files
-from Functions.modifing_files import rename_to_episodes, write_txt_file
+from my_ai_agent.functions import file_ops
+from my_ai_agent.functions.file_ops import rename_to_episodes, write_txt_file
 
 
 def make_files(folder, names):
@@ -30,7 +30,7 @@ def test_rename_to_episodes_uses_natural_order(tmp_path, no_startfile, monkeypat
     make_files(tmp_path, ["Show 1.mkv", "Show 2.mkv", "Show 10.mkv"])
     # Simulate an unordered directory listing, as os.listdir does not guarantee order.
     monkeypatch.setattr(
-        modifing_files.os, "listdir", lambda _: ["Show 10.mkv", "Show 2.mkv", "Show 1.mkv"]
+        file_ops.os, "listdir", lambda _: ["Show 10.mkv", "Show 2.mkv", "Show 1.mkv"]
     )
 
     rename_to_episodes(str(tmp_path))
@@ -72,14 +72,14 @@ def test_write_txt_file_missing_folder_raises(tmp_path):
 
 def test_rename_to_episodes_rolls_back_on_failure(tmp_path, monkeypatch):
     make_files(tmp_path, ["a.mkv", "b.mkv"])
-    real_rename = modifing_files.os.rename
+    real_rename = file_ops.os.rename
 
     def failing_rename(src, dst):
         if dst.endswith("E02.mkv"):
             raise PermissionError("file in use")
         real_rename(src, dst)
 
-    monkeypatch.setattr(modifing_files.os, "rename", failing_rename)
+    monkeypatch.setattr(file_ops.os, "rename", failing_rename)
 
     with pytest.raises(PermissionError):
         rename_to_episodes(str(tmp_path))
@@ -90,7 +90,7 @@ def test_plan_episode_renames(tmp_path):
     make_files(tmp_path, ["Ep 10.mkv", "Ep 2.mkv", ".hidden"])
     (tmp_path / "Subs").mkdir()
 
-    assert modifing_files.plan_episode_renames(str(tmp_path)) == [
+    assert file_ops.plan_episode_renames(str(tmp_path)) == [
         ("Ep 2.mkv", "E01.mkv"),
         ("Ep 10.mkv", "E02.mkv"),
     ]

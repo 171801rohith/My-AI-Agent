@@ -5,10 +5,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from my_ai_agent.settings import PROJECT_ROOT
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TOKEN_PATH = os.path.join(BASE_DIR, "token.json")
-CREDENTIALS_PATH = os.path.join(BASE_DIR, "credentials.json")
+TOKEN_PATH = str(PROJECT_ROOT / "token.json")
+CREDENTIALS_PATH = str(PROJECT_ROOT / "credentials.json")
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.send"]
 

@@ -1,7 +1,7 @@
 from llama_index.llms.ollama import Ollama
 
-from Agents.common import build_agent, build_tools, make_responder
-from config.settings import settings
+from my_ai_agent.agents.common import build_agent, build_tools, make_responder
+from my_ai_agent.settings import settings
 
 llm = Ollama(
     model=settings.ollama_model,

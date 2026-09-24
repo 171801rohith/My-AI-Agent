@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from Functions import wake_word
+from my_ai_agent.audio import wake_word
 
 
 class FakeStream:

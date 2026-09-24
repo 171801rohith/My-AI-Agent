@@ -1,13 +1,9 @@
 import asyncio
-import os
 from rich.panel import Panel
 from rich.console import Console
 import pygame
 
-from Functions.text_to_speech import text_to_speech
-
-base_dir = os.path.dirname(__file__)
-audio_path = os.path.join(base_dir, "..", "output_audios", "audio_out.wav")
+from my_ai_agent.audio.text_to_speech import OUTPUT_PATH, text_to_speech
 
 
 def _ensure_mixer():
@@ -20,7 +16,7 @@ async def play_audio_and_print_response(response_text: str, console: Console):
     _ensure_mixer()
     pygame.mixer.music.stop()
     await text_to_speech(response_text)
-    pygame.mixer.music.load(audio_path)
+    pygame.mixer.music.load(OUTPUT_PATH)
     console.print(
         Panel(
             response_text,

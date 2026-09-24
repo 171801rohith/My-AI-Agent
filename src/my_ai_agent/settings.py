@@ -7,7 +7,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# src/my_ai_agent/settings.py -> project root, where .env and credentials.json live
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 load_dotenv(PROJECT_ROOT / ".env")
 
 
@@ -23,6 +24,7 @@ class Settings:
     wake_word: str = "hey_jarvis"
     wake_threshold: float = 0.5
     whisper_model: str = "base.en"
+    notes_dir: str = str(PROJECT_ROOT / "notes")
 
     @classmethod
     def from_env(cls) -> "Settings":

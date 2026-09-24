@@ -25,7 +25,15 @@ Result before the fixes: **32 passed, 14 xfailed**. After fixes 1–11: **64 pas
   - The wake word moved to openWakeWord ("Hey Jarvis").
 
   Deferred to feature 7 (streaming voice replies): moving `pyttsx3` off the event loop and removing the TTS file round trip. `pyttsx3`'s Windows speech engine is unreliable in worker threads, and nothing else runs concurrently yet.
-- [ ] **P3 fixes 16–19.**
+- [x] **P3 fixes 16–19.** Done:
+  - One `ChatSession` with `sanctuary --mode text|voice --model gemini|ollama`.
+  - Personal values are in settings (`NOTES_DIR`) and `websites.py`.
+  - The code is in the `src/my_ai_agent/` package with a `sanctuary` command.
+  - Dependencies are cleaned up.
+  - Logging goes to `logs/sanctuary.log`.
+
+  **Note:** the fix tables below use the old file paths (`Tools/`, `Functions/`, `Agents/`, `service.py`). See the README for the new layout. 93 tests pass.
+- [ ] **Part 2 features.** Not started.
 - **One-time action:** the next email sent will open a browser sign-in and create `token.json`. After that, `token.pickle` can be deleted.
 
 - **Passed:** the core behavior works. This covers the math tools, opening known URLs and apps, creating notes, building and sending the Gmail message, reusing a cached Gmail token, detecting the exit phrase in voice chat, and a full agent turn (prompt, then ReAct answer) with an offline LLM.

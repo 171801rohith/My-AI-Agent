@@ -4,9 +4,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import service
-from Tools import google_tools
-from Tools.google_tools import GoogleTools
+from my_ai_agent import gmail_auth as service
+from my_ai_agent.tools import google_tools
+from my_ai_agent.tools.google_tools import GoogleTools
 
 
 @pytest.fixture

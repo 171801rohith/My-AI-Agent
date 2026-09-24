@@ -19,3 +19,9 @@ token.pickle
 input_audios/
 output_audios/audio_out.wav
 output_audios/temp.wav
+
+# Notes written by the agent (default location)
+notes/
+
+# Application logs
+logs/

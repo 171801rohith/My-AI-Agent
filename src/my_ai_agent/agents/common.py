@@ -2,10 +2,10 @@ from llama_index.core.agent.react.formatter import ReActChatFormatter
 from llama_index.core.agent.workflow import FunctionAgent, ReActAgent
 from llama_index.core.memory import ChatMemoryBuffer
 
-from config.system_prompt import persona_prompt
-from Tools.basic_tools import BasicTools
-from Tools.app_file_tools import AppAndFileTools
-from Tools.google_tools import GoogleTools
+from my_ai_agent.persona import persona_prompt
+from my_ai_agent.tools.basic_tools import BasicTools
+from my_ai_agent.tools.app_file_tools import AppAndFileTools
+from my_ai_agent.tools.google_tools import GoogleTools
 
 
 def build_tools() -> list:
