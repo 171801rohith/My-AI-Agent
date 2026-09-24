@@ -9,6 +9,13 @@ wheels/
 # Virtual environments
 .venv
 .env
-.input_audios
-*.json
+
+# Secrets and OAuth tokens
+credentials.json
+token.json
 token.pickle
+
+# Recordings and generated audio (intro/outro are kept)
+input_audios/
+output_audios/audio_out.wav
+output_audios/temp.wav

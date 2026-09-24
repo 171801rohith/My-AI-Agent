@@ -2,7 +2,8 @@ import os
 from llama_index.core.tools import FunctionTool
 import AppOpener
 
-from Functions.modifing_files import rename_to_episodes, write_txt_file
+from Functions.modifing_files import plan_episode_renames, rename_to_episodes, write_txt_file
+from Tools import confirm as confirmation
 
 
 class AppAndFileTools:
@@ -71,13 +72,17 @@ class AppAndFileTools:
             return f"Failed to open {app_name}. Error: {str(e)}"
 
     def close_app(self, app_name: str) -> str:
+        if not confirmation.confirm("Close app", f"Close '{app_name}'? Unsaved work may be lost."):
+            return confirmation.CANCELLED
         try:
             AppOpener.close(app_name, throw_error=True, match_closest=True)
-            return f"Successfully opened {app_name}."
+            return f"Successfully closed {app_name}."
         except Exception as e:
-            return f"Failed to open {app_name}. Error: {str(e)}"
+            return f"Failed to close {app_name}. Error: {str(e)}"
 
     def open_directory(self, full_path: str) -> str:
+        if not os.path.isdir(full_path):
+            return f"Failed to open Directory. '{full_path}' is not a directory."
         try:
             os.startfile(full_path)
             return f"Successfully opened Directory."
@@ -85,9 +90,18 @@ class AppAndFileTools:
             return f"Failed to open Directory. Error: {str(e)}"
 
     def rename_files_to_episodes(self, full_path: str) -> str:
+        if not os.path.isdir(full_path):
+            return f"Failed to rename. '{full_path}' is not a directory."
         try:
-            rename_to_episodes(full_path=full_path)
-            return f"Successfully renamed to Episodes."
+            plan = plan_episode_renames(full_path)
+            if not plan:
+                return f"Nothing to rename in '{full_path}'."
+            details = "\n".join(f"{old}  ->  {new}" for old, new in plan)
+            if not confirmation.confirm(f"Rename {len(plan)} files in {full_path}", details):
+                return confirmation.CANCELLED
+            result = rename_to_episodes(full_path=full_path, plan=plan)
+            os.startfile(full_path)
+            return result
         except Exception as e:
             return f"Failed to rename. Error: {str(e)}"
 

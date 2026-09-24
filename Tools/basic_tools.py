@@ -10,6 +10,10 @@ class BasicTools:
             fn=self.add,
             description="""Add two numbers and returns the result as float.""",
         )
+        subtract_tool = FunctionTool.from_defaults(
+            fn=self.subtract,
+            description="""Subtract b from a and returns the result as float.""",
+        )
         multiply_tool = FunctionTool.from_defaults(
             fn=self.multiply,
             description="""Multiply two numbers and returns the result as float.""",
@@ -33,6 +37,7 @@ class BasicTools:
 
         self.tools += [
             add_tool,
+            subtract_tool,
             multiply_tool,
             quotient_tool,
             remainder_tool,
@@ -47,13 +52,17 @@ class BasicTools:
 
         return a * b
 
-    def substract(self, a: float, b: float) -> float:
+    def subtract(self, a: float, b: float) -> float:
         return a - b
 
-    def quotient(self, a: float, b: float) -> float:
+    def quotient(self, a: float, b: float) -> float | str:
+        if b == 0:
+            return "Error: division by zero is undefined."
         return a / b
 
-    def remainder(self, a: float, b: float) -> float:
+    def remainder(self, a: float, b: float) -> float | str:
+        if b == 0:
+            return "Error: remainder by zero is undefined."
         return a % b
 
     def power(self, a: float, b: int) -> float:

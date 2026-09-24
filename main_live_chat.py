@@ -7,7 +7,6 @@ from rich.text import Text
 
 # from Agents.agent_ollama import generateResponse
 from Agents.agent_gemini import generateResponse
-from llama_index.core.llms import ChatMessage
 from Functions.wake_word import wake_sanctuary
 from Functions.play_audio import play_audio_and_print_response, play_intro_outro
 
@@ -20,14 +19,12 @@ os.makedirs(input_dir, exist_ok=True)
 intro_path = "output_audios/intro.wav"
 outro_path = "output_audios/outro.wav"
 
-messages = []
-
 
 async def main_loop():
     console.print(
         Panel(
             Text(
-                "⚔️  Say wake up SANCTUARY!",
+                "⚔️  Say 'Hey Jarvis' to wake SANCTUARY!",
                 justify="center",
                 style="italic bright_magenta",
             ),
@@ -44,19 +41,13 @@ async def main_loop():
             if prompt.strip() == "":
                 continue
 
-            messages.append({"role": "user", "content": prompt})
-            chatMessages = [
-                ChatMessage(role=m["role"], content=m["content"]) for m in messages
-            ]
-
             try:
-                response = await generateResponse(prompt, chatMessages)
+                response = await generateResponse(prompt)
             except Exception as e:
                 console.print(f"[bold red]Error:[/bold red] {e}")
                 continue
 
             response_text = str(response)
-            messages.append({"role": "assistant", "content": response_text})
 
             # try:
             #     await play_audio_and_print_response(

@@ -1,40 +1,14 @@
-import os
 from llama_index.llms.ollama import Ollama
-from llama_index.core.agent.workflow import ReActAgent, AgentStream
-from llama_index.core.workflow import Context
-from dotenv import load_dotenv
 
-from Tools.basic_tools import Tools
-
-load_dotenv()
+from Agents.common import build_agent, build_tools, make_responder
 
 llm = Ollama(
-    model="phi4:14b",
+    model="hermes3:8b",
     request_timeout=120.0,
     context_window=8000,
 )
+tools = build_tools()
 
-tools = Tools()
-
-agent = ReActAgent(
-    tools=tools.tools,
-    llm=llm,
-    verbose=False,
-    system_prompt=os.getenv("SYSTEM_PROMPT"),
-)
-
-ctx = Context(agent)
-
-
-async def generateResponse(message: str, chatMessages: list) -> str:
-
-    response = await agent.run(message, ctx=ctx, chat_history=chatMessages)
-    handler = agent.run(message, ctx=ctx, chat_history=chatMessages)
-    print("+" * 45)
-    for ev in handler.stream_events():
-        if isinstance(ev, AgentStream):
-            print(f"{ev.delta}", end=" ", flush=True)
-    print("+" * 45)
-    response = await handler
-
-    return str(response)
+# Hermes 3 supports native tool calling in Ollama, so no text format has to be parsed.
+agent = build_agent(llm, tools, native_tool_calling=True)
+generateResponse = make_responder(agent, token_limit=6000)

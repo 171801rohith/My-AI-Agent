@@ -1,33 +1,46 @@
-import pvporcupine
-from pvrecorder import PvRecorder
-from dotenv import load_dotenv
-import os
+import numpy as np
+import pyaudio
+from openwakeword.model import Model
+from openwakeword.utils import download_models
 
-load_dotenv()
-base_dir = os.path.dirname(__file__)
-keyword_path = os.path.join(
-    base_dir, "..", "pico_models", "sanctuary_en_windows_v3_0_0.ppn"
-)
+# Built-in openWakeWord model; runs fully offline, no API key.
+WAKE_WORD = "hey_jarvis"
+THRESHOLD = 0.5  # detection score 0..1; raise to reduce false triggers
+
+SAMPLE_RATE = 16000  # openWakeWord expects 16 kHz, 16-bit, mono audio
+FRAME_SIZE = 1280  # 80 ms, the frame length the models are trained on
+
+
+def load_model() -> Model:
+    # Fetches the model files on first run only; existing files are skipped.
+    download_models(model_names=[WAKE_WORD])
+    # ONNX runtime is used because tflite-runtime is not available on Windows.
+    return Model(wakeword_models=[WAKE_WORD], inference_framework="onnx")
 
 
 def wake_sanctuary() -> bool:
-    porcupine = pvporcupine.create(
-        access_key=os.getenv("PICOVOICE_API_KEY"),
-        keyword_paths=[keyword_path],
+    """Block until the wake word is heard. Returns False if interrupted with Ctrl+C."""
+    model = load_model()
+    audio = pyaudio.PyAudio()
+    stream = audio.open(
+        format=pyaudio.paInt16,
+        channels=1,
+        rate=SAMPLE_RATE,
+        input=True,
+        frames_per_buffer=FRAME_SIZE,
     )
-    recoder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 
     try:
-        recoder.start()
-
         while True:
-            keyword_index = porcupine.process(recoder.read())
-            if keyword_index == 0:
+            frame = np.frombuffer(
+                stream.read(FRAME_SIZE, exception_on_overflow=False), dtype=np.int16
+            )
+            scores = model.predict(frame)
+            if max(scores.values()) >= THRESHOLD:
                 return True
-
     except KeyboardInterrupt:
-        recoder.stop()
+        return False
     finally:
-        recoder.stop()
-        porcupine.delete()
-        recoder.delete()
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()

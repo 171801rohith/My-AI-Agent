@@ -1,4 +1,5 @@
 import os
+import re
 import asyncio
 from rich.console import Console
 from rich.panel import Panel
@@ -7,7 +8,6 @@ from rich.text import Text
 
 # from Agents.agent_ollama import generateResponse
 from Agents.agent_gemini import generateResponse
-from llama_index.core.llms import ChatMessage
 from Functions.wake_word import wake_sanctuary
 from Functions.play_audio import play_audio_and_print_response, play_intro_outro
 from Functions.speech_to_text import speech_to_text, record_audio
@@ -21,22 +21,18 @@ os.makedirs(input_dir, exist_ok=True)
 intro_path = "output_audios/intro.wav"
 outro_path = "output_audios/outro.wav"
 
-messages = []
 
-
-def check_for_termination(words: list) -> bool:
-    if "chat" in words:
-        i = words.index("chat")
-        if i >= 1 and words[i - 1] in ["exit", "quit"]:
-            return True
-    return False
+def check_for_termination(prompt: str) -> bool:
+    """True if the transcript contains "exit chat" or "quit chat", ignoring case
+    and punctuation (speech-to-text returns e.g. "Exit chat.")."""
+    return re.search(r"\b(exit|quit)\W+chat\b", prompt.lower()) is not None
 
 
 async def main_loop():
     console.print(
         Panel(
             Text(
-                "⚔️  Say wake up SANCTUARY!",
+                "⚔️  Say 'Hey Jarvis' to wake SANCTUARY!",
                 justify="center",
                 style="italic bright_magenta",
             ),
@@ -60,23 +56,17 @@ async def main_loop():
             else:
                 continue
 
-            if check_for_termination(prompt.lower().split(" ")):
+            if check_for_termination(prompt):
                 await play_intro_outro(outro_path)
                 break
 
-            messages.append({"role": "user", "content": prompt})
-            chatMessages = [
-                ChatMessage(role=m["role"], content=m["content"]) for m in messages
-            ]
-
             try:
-                response = await generateResponse(prompt, chatMessages)
+                response = await generateResponse(prompt)
             except Exception as e:
                 console.print(f"[bold red]Error:[/bold red] {e}")
                 continue
 
             response_text = str(response)
-            messages.append({"role": "assistant", "content": response_text})
 
             console.print(
                 Panel(

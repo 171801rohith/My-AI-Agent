@@ -37,3 +37,24 @@ def fresh_import(monkeypatch):
         return importlib.import_module(name)
 
     return _import
+
+
+@pytest.fixture(autouse=True)
+def confirm_answer(monkeypatch):
+    """Auto-approve confirmation prompts so tests never block on input.
+    Set `confirm_answer.approve = False` in a test to simulate declining."""
+    from Tools import confirm as confirmation
+
+    class Answer:
+        approve = True
+        asked = []
+
+    answer = Answer()
+    answer.asked = []
+
+    def fake_confirm(title, details):
+        answer.asked.append((title, details))
+        return answer.approve
+
+    monkeypatch.setattr(confirmation, "confirm", fake_confirm)
+    return answer

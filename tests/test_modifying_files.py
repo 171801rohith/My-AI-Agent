@@ -26,7 +26,6 @@ def test_rename_to_episodes_two_digit_numbers(tmp_path, no_startfile):
     assert names[-1] == "E11.mp4"
 
 
-@pytest.mark.xfail(reason="os.listdir order is used as-is; files are not naturally sorted")
 def test_rename_to_episodes_uses_natural_order(tmp_path, no_startfile, monkeypatch):
     make_files(tmp_path, ["Show 1.mkv", "Show 2.mkv", "Show 10.mkv"])
     # Simulate an unordered directory listing, as os.listdir does not guarantee order.
@@ -39,7 +38,6 @@ def test_rename_to_episodes_uses_natural_order(tmp_path, no_startfile, monkeypat
     assert (tmp_path / "E03.mkv").read_text() == "Show 10.mkv"
 
 
-@pytest.mark.xfail(reason="sub-directories are renamed as if they were episodes")
 def test_rename_to_episodes_skips_directories(tmp_path, no_startfile):
     make_files(tmp_path, ["a.mkv"])
     (tmp_path / "Subs").mkdir()
@@ -49,11 +47,9 @@ def test_rename_to_episodes_skips_directories(tmp_path, no_startfile):
     assert (tmp_path / "Subs").is_dir()
 
 
-@pytest.mark.xfail(reason="an existing E01.* makes the rename fail halfway, leaving a mixed state")
-def test_rename_to_episodes_handles_existing_target_names(tmp_path, no_startfile, monkeypatch):
+def test_rename_to_episodes_handles_existing_target_names(tmp_path, no_startfile):
     # Renaming A.mkv -> E01.mkv collides with the file that is already called E01.mkv.
     make_files(tmp_path, ["A.mkv", "E01.mkv"])
-    monkeypatch.setattr(modifing_files.os, "listdir", lambda _: ["A.mkv", "E01.mkv"])
 
     rename_to_episodes(str(tmp_path))
 
@@ -72,3 +68,29 @@ def test_write_txt_file_picks_next_free_name(tmp_path):
 def test_write_txt_file_missing_folder_raises(tmp_path):
     with pytest.raises(FileNotFoundError):
         write_txt_file("x", str(tmp_path / "missing"))
+
+
+def test_rename_to_episodes_rolls_back_on_failure(tmp_path, monkeypatch):
+    make_files(tmp_path, ["a.mkv", "b.mkv"])
+    real_rename = modifing_files.os.rename
+
+    def failing_rename(src, dst):
+        if dst.endswith("E02.mkv"):
+            raise PermissionError("file in use")
+        real_rename(src, dst)
+
+    monkeypatch.setattr(modifing_files.os, "rename", failing_rename)
+
+    with pytest.raises(PermissionError):
+        rename_to_episodes(str(tmp_path))
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["a.mkv", "b.mkv"]
+
+
+def test_plan_episode_renames(tmp_path):
+    make_files(tmp_path, ["Ep 10.mkv", "Ep 2.mkv", ".hidden"])
+    (tmp_path / "Subs").mkdir()
+
+    assert modifing_files.plan_episode_renames(str(tmp_path)) == [
+        ("Ep 2.mkv", "E01.mkv"),
+        ("Ep 10.mkv", "E02.mkv"),
+    ]

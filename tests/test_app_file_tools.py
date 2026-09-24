@@ -45,9 +45,9 @@ def test_open_app_failure_is_reported(tools, fake_appopener):
     assert tools.open_app("missing").startswith("Failed to open missing")
 
 
-@pytest.mark.xfail(reason="close_app reports 'Successfully opened' instead of 'closed'")
 def test_close_app_message(tools, fake_appopener):
-    assert "closed" in tools.close_app("brave")
+    assert tools.close_app("brave") == "Successfully closed brave."
+    assert tools.close_app("missing").startswith("Failed to close missing")
 
 
 def test_open_directory(tools, tmp_path, no_startfile):
@@ -55,7 +55,6 @@ def test_open_directory(tools, tmp_path, no_startfile):
     assert no_startfile == [str(tmp_path)]
 
 
-@pytest.mark.xfail(reason="open_directory passes any path to os.startfile, including executables")
 def test_open_directory_refuses_files(tools, tmp_path, no_startfile):
     program = tmp_path / "program.bat"
     program.write_text("echo hi")
@@ -75,3 +74,28 @@ def test_note_down_in_txt(tools, monkeypatch, no_startfile):
 
     assert tools.note_down_in_txt("hello").startswith("Successfully")
     assert written == [("hello", "R:/MOVIES/Created By Sanctuary")]
+
+
+def test_declined_close_app_does_nothing(tools, fake_appopener, confirm_answer):
+    confirm_answer.approve = False
+
+    assert tools.close_app("brave").startswith("Cancelled")
+    assert fake_appopener == []
+
+
+def test_rename_shows_plan_and_can_be_declined(tools, tmp_path, no_startfile, confirm_answer):
+    (tmp_path / "Ep 2.mkv").write_text("")
+    (tmp_path / "Ep 10.mkv").write_text("")
+    confirm_answer.approve = False
+
+    assert tools.rename_files_to_episodes(str(tmp_path)).startswith("Cancelled")
+    assert "Ep 2.mkv  ->  E01.mkv" in confirm_answer.asked[0][1]
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["Ep 10.mkv", "Ep 2.mkv"]
+
+
+def test_rename_approved(tools, tmp_path, no_startfile):
+    (tmp_path / "x.mkv").write_text("")
+
+    assert tools.rename_files_to_episodes(str(tmp_path)).startswith("Successfully")
+    assert [p.name for p in tmp_path.iterdir()] == ["E01.mkv"]
+    assert no_startfile == [str(tmp_path)]

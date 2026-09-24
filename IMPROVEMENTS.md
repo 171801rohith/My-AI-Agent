@@ -11,7 +11,15 @@ uv sync            # installs pytest from the dev dependency group
 uv run pytest -rx  # -rx lists the known bugs
 ```
 
-Result on the current `main`: **32 passed, 14 xfailed**.
+Result before the fixes: **32 passed, 14 xfailed**. After fixes 1–11: **64 passed, 0 xfailed**.
+
+### Progress
+
+- [x] **P0 fixes 1–5.** Done, except the "restrict file tools to configured root folders" part of fix 1, which waits for the settings module (fix 15). Old recordings are still in git history; see fix 2.
+- [x] **P1 fixes 6–11.** Done. Live runs against Gemini and Ollama are still to be checked by hand.
+- [ ] **P2 fixes 12–15.**
+- [ ] **P3 fixes 16–19.**
+- **One-time action:** the next email sent will open a browser sign-in and create `token.json`. After that, `token.pickle` can be deleted.
 
 - **Passed:** the core behavior works. This covers the math tools, opening known URLs and apps, creating notes, building and sending the Gmail message, reusing a cached Gmail token, detecting the exit phrase in voice chat, and a full agent turn (prompt, then ReAct answer) with an offline LLM.
 - **xfailed:** each xfail is a known bug, and the test asserts the correct behavior. `xfail_strict = true` is set in `pyproject.toml`, so when a bug is fixed its test "unexpectedly passes" and the run fails. Remove the `@pytest.mark.xfail` marker in the same commit as the fix.
@@ -47,7 +55,7 @@ Result on the current `main`: **32 passed, 14 xfailed**.
 | # | Issue | Fix |
 |---|-------|-----|
 | 12 | Waiting for the spacebar is a busy loop that pins a CPU core. `pyttsx3.runAndWait()` and recording block the event loop. | Use `keyboard.wait("space")` or an event for the key press, and move blocking audio work into `asyncio.to_thread`. |
-| 13 | A new Leopard model is created on every utterance and never deleted. Porcupine is created per wake. The mixer, LLM, tools and agent are all built at import time. | Create each once in a startup `App` object and release them in `finally` on shutdown. |
+| 13 | A new Leopard model is created on every utterance and never deleted. The openWakeWord model is loaded per wake. The mixer, LLM, tools and agent are all built at import time. | Create each once in a startup `App` object and release them in `finally` on shutdown. |
 | 14 | Audio goes through fixed WAV files: 44.1 kHz stereo is written to disk, read back, and resampled. TTS makes two file round trips. | Record at `leopard.sample_rate` in mono and call `leopard.process(pcm)` in memory. Use temporary files or buffers for TTS, and drop pydub's private `_spawn`. |
 | 15 | Missing API keys or `credentials.json` produce cryptic errors partway through a run. `load_dotenv()` is called in four modules. | Add one `config/settings.py` (pydantic-settings) that loads `.env` once and validates required keys at startup. |
 

@@ -20,7 +20,6 @@ A Python-based AI agent platform designed for interactive chat and voice-based e
 ├── config/           # Configuration files and settings
 ├── input_audios/     # Directory for input audio files
 ├── output_audios/    # Directory for output audio files
-├── pico_models/      # Model files for agent processing
 ├── main_live_chat.py # Entry point for live chat interface
 ├── main_voice_chat.py# Entry point for voice chat interface
 ├── .gitignore
@@ -69,7 +68,8 @@ A Python-based AI agent platform designed for interactive chat and voice-based e
 
 - Add or modify agents in the `Agents/` directory.
 - Enhance agent abilities with new functions in `Functions/` or tools in `Tools/`.
-- Adjust configuration and models in `config/` and `pico_models/`.
+- Adjust configuration in `config/`.
+- The wake word is "Hey Jarvis" (openWakeWord, fully offline). Change `WAKE_WORD` and `THRESHOLD` in `Functions/wake_word.py`. The model files download automatically on the first run.
 
 ## Contributing
 
